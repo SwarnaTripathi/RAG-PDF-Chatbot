@@ -113,3 +113,22 @@ Please review the [walkthrough.md](file:///C:/Users/HP/.gemini/antigravity-ide/b
   - Added `if chunks:` checks and error notifications (`st.error`) to gracefully handle empty documents.
 * **Environment-Based Secret Retrieval:**
   - Switched the client initialization to `os.environ.get("GEMINI_API_KEY", "YOUR_GEMINI_API_KEY")` to securely retrieve keys without hardcoding them in version control.
+
+### 6. Deployment Instructions (Streamlit Community Cloud)
+The project is fully prepared for zero-cost deployment to Streamlit Community Cloud directly from GitHub.
+* **Prerequisites:**
+  - The repository must be public (already pushed to `https://github.com/SwarnaTripathi/RAG-PDF-Chatbot.git`).
+  - Dependencies are declared in `requirements.txt`.
+* **Deployment Steps:**
+  1. Navigate to [Streamlit Community Cloud](https://share.streamlit.io/) and sign in using your GitHub account.
+  2. Click **New app** in the upper right corner.
+  3. Enter the following repository details:
+     - **Repository:** `SwarnaTripathi/RAG-PDF-Chatbot`
+     - **Branch:** `main`
+     - **Main file path:** `project/app.py`
+  4. Click **Advanced settings...** (located next to the deploy button).
+  5. In the **Secrets** text area, paste your API key in TOML format:
+     ```toml
+     GEMINI_API_KEY = "YOUR_GEMINI_API_KEY"
+     ```
+  6. Click **Save**, then click **Deploy!** Streamlit will automatically provision a container, install `requirements.txt`, inject your API key, and launch the RAG chatbot.

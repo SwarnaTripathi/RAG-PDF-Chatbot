@@ -21,3 +21,79 @@ The actual problems in your original code fell into three main areas:
 ### 3. Missing Empty-PDF Validation
 * **The Problem:** If a user uploaded a scanned PDF with no extractable text, `chunks` would be empty. The code would then crash with an `IndexError` when attempting to build the FAISS index because `embeddings` had no dimensions.
 * **The Fix:** We added a validation step to ensure text was extracted successfully before attempting chunking and indexing, displaying a clean error message instead of crashing.
+
+Ran command: `python -m streamlit run app.py`
+Viewed app.py:90-108
+
+The actual problems in your original code fell into three main areas:
+
+### 1. The Performance Loop (Streamlit Rerun Behavior)
+* **The Problem:** Streamlit reruns the entire script from top to bottom every time you interact with the page (e.g., typing a question or clicking a button). In your original code, this meant that every time you asked a question, the app had to:
+  1. Re-read the uploaded PDF.
+  2. Re-split the text into chunks.
+  3. Re-load the `SentenceTransformer` model.
+  4. Re-calculate embeddings for **every single chunk** (a very slow CPU/GPU operation).
+  5. Re-create the FAISS index.
+* **The Fix:** We cached the embedding model using `@st.cache_resource` and cached the index and text chunks in `st.session_state`. Now, the PDF processing and indexing run **only once** when a new file is uploaded. Subsequent queries run instantaneously.
+
+### 2. FAISS Index Out-of-Bounds / Duplicate Chunks Bug
+* **The Problem:** Your code searched for the top `5` matches: `index.search(query_embedding, 5)`. 
+  * If your PDF was short and had **fewer than 5 chunks**, FAISS returned `-1` for the missing slots.
+  * In Python, `chunks[-1]` refers to the last element. This meant the last chunk was duplicated multiple times in your prompt context, leading to repetitive or low-quality answers.
+* **The Fix:** We dynamically set the search size to `k = min(5, len(chunks))` and added a boundary check (`0 <= idx < len(chunks)`) to ensure only valid chunks are accessed.
+
+### 3. Missing Empty-PDF Validation
+* **The Problem:** If a user uploaded a scanned PDF with no extractable text, `chunks` would be empty. The code would then crash with an `IndexError` when attempting to build the FAISS index because `embeddings` had no dimensions.
+* **The Fix:** We added a validation step to ensure text was extracted successfully before attempting chunking and indexing, displaying a clean error message instead of crashing.
+
+Ran command: `git status`
+Edited .gitignore
+Edited requirements.txt
+Edited README.md
+Ran command: `git init`
+Ran command: `git remote add origin https://github.com/SwarnaTripathi/RAG-PDF-Chatbot.git`
+Ran command: `git branch -M main`
+Ran command: `git add .`
+Ran command: `git status`
+Ran command: `git commit -m "Initialize project: Add RAG PDF Chatbot application, requirements, gitignore, and readme"`
+Ran command: `git push -u origin main`
+
+I am waiting for the repository to push to GitHub. If git has credentials configured on your system, it will complete shortly. Otherwise, we will see the logs if authentication is required.
+
+Viewed model.py:1-6
+Viewed gpt-test.py:1-18
+Viewed app.py:1-15
+Edited app.py
+Edited gemini_test.py
+Edited model.py
+Viewed pdf_pipeline.py:1-15
+Edited pdf_pipeline.py
+Edited gpt-test.py
+Ran command: `git status`
+Ran command: `git add .`
+Ran command: `git commit --amend -m "Initialize project: Add RAG PDF Chatbot application, requirements, gitignore, and readme"`
+Ran command: `git status`
+Ran command: `git push -u origin main`
+Edited walkthrough.md
+
+The project has been successfully pushed to GitHub!
+
+Please review the [walkthrough.md](file:///C:/Users/HP/.gemini/antigravity-ide/brain/91fc7511-5109-40e7-ba54-85c3a99773cb/walkthrough.md) artifact for details on how we handled the push protection issue and structured the repository.
+
+### Summary of Git Deployment:
+1. **Secret Scanning Remediation**: GitHub Push Protection originally blocked the commit due to hardcoded Gemini and OpenAI API keys found in the practice files and `project/app.py`. I removed these secrets and changed them to load dynamically via `os.environ.get`.
+2. **Commit Rewriting**: I amended the Git commit to remove all secret occurrences from the commit history completely.
+3. **Repository Infrastructure**: Added a `.gitignore` to prevent caching/temporary files from being tracked, created a `requirements.txt` listing all project dependencies, and wrote a professional `README.md` explaining setup and architectural details.
+4. Push Successful: The repository was initialized, remote origin was bound, and the clean commit history was successfully pushed to https://github.com/SwarnaTripathi/RAG-PDF-Chatbot.git on the main branch.
+
+### 4. Git Deployment & Secret Scanning Remediation Details
+* **The Problem:** The initial push to GitHub was blocked by GitHub's Push Protection rules (GH013) because the commits contained active hardcoded API keys for GCP/Gemini and OpenAI across multiple files:
+  1. `practise/gemini_test.py`
+  2. `practise/model.py`
+  3. `practise/pdf_pipeline.py`
+  4. `project/app.py`
+  5. `practise/gpt-test.py`
+* **The Fix:**
+  - **Code Remediation:** Modified all 5 files to remove the hardcoded API key strings and replaced them with secure, dynamic environment variable loading (`os.environ.get` check for `GEMINI_API_KEY` and `OPENAI_API_KEY`).
+  - **Git History Purge:** Staged the remediated files (`git add .`) and amended the root commit (`git commit --amend`) so that the secrets were completely expunged from the commit history.
+  - **GitHub Push:** Re-executed `git push -u origin main`, which successfully passed GitHub's filters and pushed the branch to the remote repository.

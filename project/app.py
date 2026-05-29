@@ -97,13 +97,19 @@ if uploaded_file is not None:
 
                 Answer:
                 """
-                response = client.models.generate_content(
-                    model="gemini-2.5-flash",
-                    contents=prompt
-                )
+                try:
+                    response = client.models.generate_content(
+                        model="gemini-2.0-flash",
+                        contents=prompt
+                    )
 
-                st.subheader("Answer")
-                st.write(response.text)
+                    st.subheader("Answer")
+                    st.write(response.text)
+                except Exception as e:
+                    st.error(f"Gemini API Error: {e}")
+
+                    st.subheader("Retrieved Context")
+                    st.write(retrieved_text)
             else:
                 st.warning("No text chunks available to query.")
     else:

@@ -1,0 +1,23 @@
+Ran command: `python -m streamlit run app.py`
+Viewed app.py:90-108
+
+The actual problems in your original code fell into three main areas:
+
+### 1. The Performance Loop (Streamlit Rerun Behavior)
+* **The Problem:** Streamlit reruns the entire script from top to bottom every time you interact with the page (e.g., typing a question or clicking a button). In your original code, this meant that every time you asked a question, the app had to:
+  1. Re-read the uploaded PDF.
+  2. Re-split the text into chunks.
+  3. Re-load the `SentenceTransformer` model.
+  4. Re-calculate embeddings for **every single chunk** (a very slow CPU/GPU operation).
+  5. Re-create the FAISS index.
+* **The Fix:** We cached the embedding model using `@st.cache_resource` and cached the index and text chunks in `st.session_state`. Now, the PDF processing and indexing run **only once** when a new file is uploaded. Subsequent queries run instantaneously.
+
+### 2. FAISS Index Out-of-Bounds / Duplicate Chunks Bug
+* **The Problem:** Your code searched for the top `5` matches: `index.search(query_embedding, 5)`. 
+  * If your PDF was short and had **fewer than 5 chunks**, FAISS returned `-1` for the missing slots.
+  * In Python, `chunks[-1]` refers to the last element. This meant the last chunk was duplicated multiple times in your prompt context, leading to repetitive or low-quality answers.
+* **The Fix:** We dynamically set the search size to `k = min(5, len(chunks))` and added a boundary check (`0 <= idx < len(chunks)`) to ensure only valid chunks are accessed.
+
+### 3. Missing Empty-PDF Validation
+* **The Problem:** If a user uploaded a scanned PDF with no extractable text, `chunks` would be empty. The code would then crash with an `IndexError` when attempting to build the FAISS index because `embeddings` had no dimensions.
+* **The Fix:** We added a validation step to ensure text was extracted successfully before attempting chunking and indexing, displaying a clean error message instead of crashing.

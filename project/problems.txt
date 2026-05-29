@@ -97,3 +97,19 @@ Please review the [walkthrough.md](file:///C:/Users/HP/.gemini/antigravity-ide/b
   - **Code Remediation:** Modified all 5 files to remove the hardcoded API key strings and replaced them with secure, dynamic environment variable loading (`os.environ.get` check for `GEMINI_API_KEY` and `OPENAI_API_KEY`).
   - **Git History Purge:** Staged the remediated files (`git add .`) and amended the root commit (`git commit --amend`) so that the secrets were completely expunged from the commit history.
   - **GitHub Push:** Re-executed `git push -u origin main`, which successfully passed GitHub's filters and pushed the branch to the remote repository.
+
+### 5. New Additions in project/app.py Codebase
+* **`st.cache_resource` for Model Loading:**
+  - Added the `@st.cache_resource` decorator to the `get_model()` function. This caches the `SentenceTransformer` in memory so it doesn't reload and slow down the app on every rerun.
+* **Session State State-Machine Check (`st.session_state`):**
+  - Added `st.session_state.file_name`, `st.session_state.chunks`, and `st.session_state.index` variables.
+  - Added an conditional check to verify if the file has changed: `if "file_name" not in st.session_state or st.session_state.file_name != uploaded_file.name`.
+  - PDF text extraction, text splitting, embedding generation, and FAISS indexing now run **only once** per upload, bypassing redundant computation during subsequent chat interactions.
+* **Dynamic Search Bounds Guard (`k` parameter):**
+  - Added `k = min(5, len(chunks))` to ensure the FAISS search size matches the document's structure, preventing out-of-bounds search crashes on small documents.
+* **Invalid Index Range Filter:**
+  - Added `if 0 <= idx < len(chunks):` range validation to filter out any `-1` indices returned by FAISS, ensuring no duplicate prompt snippets.
+* **Document Text Verification Check:**
+  - Added `if chunks:` checks and error notifications (`st.error`) to gracefully handle empty documents.
+* **Environment-Based Secret Retrieval:**
+  - Switched the client initialization to `os.environ.get("GEMINI_API_KEY", "YOUR_GEMINI_API_KEY")` to securely retrieve keys without hardcoding them in version control.

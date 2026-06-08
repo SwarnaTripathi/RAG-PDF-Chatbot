@@ -3,14 +3,20 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 from sentence_transformers import SentenceTransformer
 import faiss
 import numpy as np
-from google import genai
+
 import streamlit as st
+from llm import LLMService
 
-import os
+@st.cache_resource
+def get_llm(provider):
+    return LLMService(provider=provider)
 
-client = genai.Client(
-    api_key=os.environ.get("GEMINI_API_KEY", "YOUR_GEMINI_API_KEY")
+LLM_PROVIDER = st.sidebar.selectbox(
+    "Select LLM",
+    ["gemini", "mistral"]
 )
+
+llm = get_llm(LLM_PROVIDER)
 
 @st.cache_resource
 def get_model():
@@ -98,15 +104,15 @@ if uploaded_file is not None:
                 Answer:
                 """
                 try:
-                    response = client.models.generate_content(
-                        model="gemini-2.0-flash",
-                        contents=prompt
-                    )
+
+                    answer = llm.generate(prompt)
 
                     st.subheader("Answer")
-                    st.write(response.text)
+                    st.write(answer)
+
                 except Exception as e:
-                    st.error(f"Gemini API Error: {e}")
+
+                    st.error(f"LLM Error: {e}")
 
                     st.subheader("Retrieved Context")
                     st.write(retrieved_text)

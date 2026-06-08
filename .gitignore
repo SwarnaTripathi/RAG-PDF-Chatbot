@@ -50,6 +50,8 @@ target/
 profile_default/
 ipython_config.py
 __pypackages__/
+.env
+__pycache__/
 celerybeat-schedule
 celerybeat.pid
 *.sage.py
@@ -63,3 +65,4 @@ venv.bak/
 .streamlit/
 .DS_Store
 Thumbs.db
+.problems.txt

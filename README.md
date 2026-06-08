@@ -1,6 +1,6 @@
 # 📄 RAG PDF Chatbot
 
-[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://rag-pdf-chatbot03.streamlit.app/)
+[![Streamlit App]](https://rag-pdf-chatbot03.streamlit.app/)
 
 An interactive Retrieval-Augmented Generation (RAG) PDF Chatbot built with **Streamlit**, **SentenceTransformers**, **FAISS**, and support for multiple LLM providers — **Google Gemini** and **Mistral AI**.
 

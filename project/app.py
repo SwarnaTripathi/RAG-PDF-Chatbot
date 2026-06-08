@@ -6,6 +6,7 @@ import numpy as np
 
 import streamlit as st
 from llm import LLMService
+import os
 
 @st.cache_resource
 def get_llm(provider):
@@ -16,7 +17,11 @@ LLM_PROVIDER = st.sidebar.selectbox(
     ["gemini", "mistral"]
 )
 
-llm = get_llm(LLM_PROVIDER)
+# Warn in sidebar if the required API key is missing
+if LLM_PROVIDER == "gemini" and not os.getenv("GEMINI_API_KEY"):
+    st.sidebar.warning("⚠️ GEMINI_API_KEY is not set. Add it in Streamlit Cloud Secrets.")
+elif LLM_PROVIDER == "mistral" and not os.getenv("MISTRAL_API_KEY"):
+    st.sidebar.warning("⚠️ MISTRAL_API_KEY is not set. Add it in Streamlit Cloud Secrets.")
 
 @st.cache_resource
 def get_model():
@@ -105,6 +110,7 @@ if uploaded_file is not None:
                 """
                 try:
 
+                    llm = get_llm(LLM_PROVIDER)
                     answer = llm.generate(prompt)
 
                     st.subheader("Answer")

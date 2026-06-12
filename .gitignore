@@ -66,4 +66,5 @@ venv.bak/
 .DS_Store
 Thumbs.db
 .problems.txt
+problems.txt
 practise/
